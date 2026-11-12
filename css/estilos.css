@@ -142,3 +142,22 @@ a {
   border-color: #1E6FA8;
   color: #FFFFFF;
 }
+
+/* Lista de requisitos de la contraseña: gris si falta, verde si se cumple */
+.requisitos-clave {
+  list-style: none;
+  padding-left: 0;
+  color: #6C7A89;
+}
+
+.requisitos-clave li::before {
+  content: "○ ";
+}
+
+.requisitos-clave li.cumple {
+  color: #198754;
+}
+
+.requisitos-clave li.cumple::before {
+  content: "✓ ";
+}
