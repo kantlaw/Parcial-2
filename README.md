@@ -78,10 +78,10 @@ Los controles y las 7 pruebas (objetivo, pasos, resultado y control) están en [
 
 | Módulo | Archivos principales | Responsable |
 |---|---|---|
-| Base del proyecto y reseñas e interfaz | Base de datos, autenticación, catálogo y CRUD de categorías y servicios (revisión preliminar); `cliente/resena.php`, `cliente/mis_reservas.php`, `css/`, `README.md` | Andrés Sinclair |
-| Seguridad y pruebas | `includes/seguridad.php`, `includes/conexion.php`, `registro.php`, `instalar.php`, `js/app.js`, `security/` | Ricardo Cedeño |
-| Horarios | `admin/horarios.php`, `admin/horario_form.php`, `admin/horario_eliminar.php`, `admin/index.php`, `includes/header.php` | Jassier Hernández |
-| Reservas | `cliente/reservar.php`, `cliente/cancelar.php`, `includes/reservas.php`, `admin/reservas.php`, `admin/reserva_estado.php`, `servicio.php` | Carlos Castillo |
+| Catálogo y administración | Base del proyecto (base de datos, catálogo, CRUD de categorías y servicios); `admin/index.php`, `includes/header.php`, `README.md` | Andrés Sinclair |
+| Autenticación y sesiones | `includes/seguridad.php`, `includes/conexion.php`, `registro.php`, `instalar.php`, `js/app.js` | Ricardo Cedeño |
+| Horarios y reservas | `admin/horarios.php`, `admin/horario_form.php`, `admin/horario_eliminar.php`, `admin/reservas.php`, `admin/reserva_estado.php`, `cliente/reservar.php`, `cliente/cancelar.php`, `includes/reservas.php`, `servicio.php` | Jassier Hernández |
+| Reseñas, interfaz y pruebas | `cliente/resena.php`, `cliente/mis_reservas.php`, `css/estilos.css`, `security/` | Carlos Castillo |
 
 ## Bibliotecas de terceros
 
