@@ -1,8 +1,11 @@
 # ByteFix Soporte · Book&Go Lite
 
-Gestor de citas para un negocio de **soporte técnico**. Proyecto Parcial 2 de Desarrollo Web (UTP · FISC · 2026).
+Gestor de citas con reseñas para un negocio de **soporte técnico**. Proyecto Parcial 2 de Desarrollo Web (UTP · FISC · 2026).
 
-Tecnologías: PHP 8, MySQL/MariaDB (PDO), HTML5, CSS3, JavaScript y Bootstrap 5.3.3.
+**Integrantes:** Andrés Sinclair, Ricardo Cedeño, Jassier Hernández y Carlos Castillo.
+
+- **Repositorio:** https://github.com/kantlaw/Parcial-2 (historial de contribuciones en la pestaña *Commits* y en *Insights → Contributors*)
+- **Tecnologías:** PHP 8, MySQL/MariaDB (PDO), HTML5, CSS3, JavaScript y Bootstrap 5.3.3
 
 ## Requisitos
 
@@ -11,16 +14,33 @@ Tecnologías: PHP 8, MySQL/MariaDB (PDO), HTML5, CSS3, JavaScript y Bootstrap 5.
 ## Instalación
 
 1. Copia la carpeta `bookgo-lite` dentro de `C:\xampp\htdocs\`.
-2. Abre phpMyAdmin (`http://localhost/phpmyadmin`), ve a **Importar** y selecciona `database/bookgo_lite.sql`.
-   Crea la base `bookgo_lite` con las 7 tablas y los datos de prueba.
-3. Copia `includes/config.ejemplo.php` como `includes/config.php`.
-   Si tu MySQL tiene contraseña o la carpeta tiene otro nombre, ajusta `DB_CLAVE` y `BASE_URL`.
-4. Crea el administrador entrando a `http://localhost/bookgo-lite/instalar.php`.
-   Solo funciona desde el mismo equipo y mientras no exista un ADMIN; después se bloquea sola.
-5. Entra a `http://localhost/bookgo-lite/`.
+2. Abre phpMyAdmin (`http://localhost/phpmyadmin`), quédate en la página principal (sin seleccionar ninguna base), ve a **Importar** y selecciona `database/bookgo_lite.sql`. Se crea la base `bookgo_lite` con sus tablas y los datos de prueba. Los avisos amarillos "#1046 Base de datos no seleccionada" se pueden ignorar.
+3. Copia `includes/config.ejemplo.php` como `includes/config.php`. Si tu MySQL tiene contraseña o la carpeta tiene otro nombre, ajusta `DB_CLAVE` y `BASE_URL`.
+4. Crea el administrador en `http://localhost/bookgo-lite/instalar.php`. Solo funciona desde el mismo equipo y mientras no exista un ADMIN; después queda bloqueada.
+5. Registra al menos un cliente desde **Crear cuenta** (`registro.php`). Para probar la seguridad entre clientes, registra dos.
+6. Entra a `http://localhost/bookgo-lite/`.
 
-Los clientes de prueba se crean desde **Crear cuenta** (`registro.php`).
-El repositorio no contiene contraseñas: `config.php` está en `.gitignore` y el ADMIN se crea en el paso 4.
+El repositorio no contiene contraseñas: `includes/config.php` está en `.gitignore`, el ADMIN se crea en el paso 4 y los clientes en el paso 5.
+
+**Contraseñas:** mínimo 12 caracteres, con mayúscula, minúscula, número y símbolo, sin espacios y sin contener el correo.
+
+**Si el login queda bloqueado** por 5 intentos fallidos: espera 15 minutos o ejecuta `DELETE FROM intentos_login;` en phpMyAdmin.
+
+## Funciones
+
+| Rol | Puede |
+|---|---|
+| Visitante | Ver inicio, catálogo (búsqueda por nombre y filtro por categoría), detalle del servicio con horarios y reseñas, registrarse e iniciar sesión |
+| CLIENTE | Reservar un horario futuro con cupos, ver sus reservas, cancelar las suyas antes de la cita (si están PENDIENTE o CONFIRMADA), reseñar una reserva REALIZADA |
+| ADMIN | Panel con resumen; CRUD de categorías, servicios y horarios; ver todas las reservas y cambiar su estado (PENDIENTE → CONFIRMADA → REALIZADA, o CANCELADA) |
+
+## Flujo de una reserva
+
+1. El cliente abre un servicio y pulsa **Reservar** en un horario con cupos.
+2. `cliente/reservar.php` abre una transacción, bloquea el horario (`SELECT ... FOR UPDATE`), verifica que pertenezca al servicio, que sea futuro y que el cliente no tenga otra reserva activa ahí, descuenta el cupo con `UPDATE ... WHERE cupos_disponibles > 0` e inserta la reserva PENDIENTE.
+3. El ADMIN la confirma y, después de la cita, la marca REALIZADA.
+4. Si se cancela estando PENDIENTE o CONFIRMADA, se devuelve **un** cupo. Cancelarla otra vez no devuelve nada, y una REALIZADA no se puede cancelar.
+5. Con la reserva REALIZADA, el cliente puede dejar **una** reseña de 1 a 5 estrellas, que aparece en el detalle del servicio.
 
 ## Estructura
 
@@ -29,53 +49,46 @@ bookgo-lite/
 ├── index.php, catalogo.php, servicio.php   Páginas públicas
 ├── registro.php, login.php, logout.php     Autenticación
 ├── instalar.php                            Creación segura del ADMIN
-├── admin/                                  Panel y CRUD (solo ADMIN)
-├── cliente/                                Vistas del CLIENTE
-├── includes/                               Conexión, seguridad y plantilla
+├── cliente/                                Reservar, cancelar, mis reservas, reseña (solo CLIENTE)
+├── admin/                                  Panel, CRUD y reservas (solo ADMIN)
+├── includes/                               Conexión, seguridad, reservas y plantilla
 ├── css/, js/, img/                         Estilos, scripts e imágenes
 ├── database/bookgo_lite.sql                Script de la base de datos
-└── security/                               SECURITY.md y evidencias
+└── security/                               SECURITY.md y evidencias de las pruebas
 ```
 
 ## Base de datos
 
-Tablas: `roles`, `usuarios`, `categorias`, `servicios`, `horarios`, `reservas`, `resenas` (más `intentos_login` como apoyo para el bloqueo de login).
+Tablas: `roles`, `usuarios`, `categorias`, `servicios`, `horarios`, `reservas`, `resenas` y `intentos_login` (apoyo para el bloqueo de login).
 
 Cómo las relaciones impiden datos inconsistentes:
 
-- **FK con `ON DELETE RESTRICT`**: no se puede borrar una categoría con servicios, ni un servicio con horarios o reservas.
+- **FK con `ON DELETE RESTRICT`**: no se puede borrar una categoría con servicios, un servicio con horarios o reservas, ni un horario con reservas. En esos casos se usa desactivación lógica (`estado = INACTIVO`).
 - **FK compuesta `reservas(horario_id, servicio_id) → horarios(id, servicio_id)`**: una reserva no puede apuntar a un horario de otro servicio.
 - **FK compuesta `resenas(reserva_id, usuario_id) → reservas(id, usuario_id)`**: solo el dueño de la reserva puede reseñarla.
 - **`UNIQUE` en `resenas.reserva_id`**: una sola reseña por reserva.
-- **`UNIQUE (usuario_id, horario_id, activa)`**: un cliente no puede tener dos reservas activas en el mismo horario.
-- **`CHECK`**: precio ≥ 0, duración > 0, hora final > hora inicial, cupos entre 0 y el total, calificación de 1 a 5.
+- **`UNIQUE (usuario_id, horario_id, activa)`**: un cliente no puede tener dos reservas activas en el mismo horario (`activa` es una columna calculada que vale 1 para PENDIENTE/CONFIRMADA y NULL en otro caso).
+- **`CHECK`**: precio ≥ 0, duración > 0, hora final > hora inicial, `0 ≤ cupos_disponibles ≤ cupos_totales`, calificación de 1 a 5.
 
-## Estado del proyecto
+## Seguridad
 
-**Revisión preliminar (9 de noviembre):**
+Los controles y las 7 pruebas (objetivo, pasos, resultado y control) están en [`security/SECURITY.md`](security/SECURITY.md), con capturas en `security/evidencias/`.
 
-- [x] Base de datos con las 7 tablas, relaciones y datos de prueba
-- [x] Registro, inicio y cierre de sesión
-- [x] Navegación diferenciada para ADMIN y CLIENTE
-- [x] CRUD de categorías y servicios
-- [x] Catálogo con búsqueda por nombre y filtro por categoría, y detalle del servicio
-- [x] Controles de seguridad base: `password_hash`, sesiones seguras, bloqueo tras 5 intentos, PDO preparado, `htmlspecialchars`, CSRF, cabeceras HTTP y validación de rol en PHP
+## Distribución del trabajo
 
-**Pendiente para la entrega final (12 de noviembre):**
-
-| Módulo | Qué falta | Responsable |
+| Módulo | Archivos principales | Responsable |
 |---|---|---|
-| Horarios | CRUD de horarios en `admin/` (sin fechas pasadas, hora final > inicial) | |
-| Reservas | Reservar con transacción y `UPDATE ... WHERE cupos_disponibles > 0`; cancelar devolviendo un cupo; cambio de estados por el ADMIN | |
-| Reseñas | Formulario de reseña para reservas REALIZADA propias | |
-| Seguridad y pruebas | Ejecutar las 7 pruebas y documentarlas en `security/SECURITY.md` con capturas | |
+| Base del proyecto y reseñas e interfaz | Base de datos, autenticación, catálogo y CRUD de categorías y servicios (revisión preliminar); `cliente/resena.php`, `cliente/mis_reservas.php`, `css/`, `README.md` | Andrés Sinclair |
+| Seguridad y pruebas | `includes/seguridad.php`, `includes/conexion.php`, `registro.php`, `instalar.php`, `js/app.js`, `security/` | Ricardo Cedeño |
+| Horarios | `admin/horarios.php`, `admin/horario_form.php`, `admin/horario_eliminar.php`, `admin/index.php`, `includes/header.php` | Jassier Hernández |
+| Reservas | `cliente/reservar.php`, `cliente/cancelar.php`, `includes/reservas.php`, `admin/reservas.php`, `admin/reserva_estado.php`, `servicio.php` | Carlos Castillo |
 
 ## Bibliotecas de terceros
 
-- [Bootstrap 5.3.3](https://getbootstrap.com/) (licencia MIT), incluido localmente en `css/` y `js/`. Se adaptaron los colores en `css/estilos.css`.
+- [Bootstrap 5.3.3](https://getbootstrap.com/) (licencia MIT), incluido localmente en `css/` y `js/`. Los colores y detalles se adaptaron en `css/estilos.css`.
 
 ## Uso de inteligencia artificial
 
-- Herramienta: Claude (Anthropic).
-- Uso: generación de la base del código de la revisión preliminar y de una guía de estudio para comprender cada archivo.
-- Verificación: probamos cada función en XAMPP (registro, login, CRUD, permisos y validaciones) antes de entregarla.
+- **Herramienta:** Claude (Anthropic).
+- **Uso:** generación del código base de ambas fases (base de datos, autenticación, CRUD, horarios, reservas y reseñas), de la política de contraseñas, de la documentación de seguridad y de una guía de estudio para comprender cada archivo.
+- **Verificación:** probamos cada función en XAMPP (registro, login, permisos, CRUD, reservas, cupos, cancelaciones, reseñas) y ejecutamos las 7 pruebas de seguridad documentadas en `SECURITY.md`. Cada integrante estudió su módulo para poder explicarlo en la sustentación.

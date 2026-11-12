@@ -34,6 +34,8 @@ $rol = $usuario['rol'] ?? null;
             <li class="nav-item"><a class="nav-link" href="<?= url('admin/index.php') ?>">Panel</a></li>
             <li class="nav-item"><a class="nav-link" href="<?= url('admin/categorias.php') ?>">Categorías</a></li>
             <li class="nav-item"><a class="nav-link" href="<?= url('admin/servicios.php') ?>">Servicios</a></li>
+            <li class="nav-item"><a class="nav-link" href="<?= url('admin/horarios.php') ?>">Horarios</a></li>
+            <li class="nav-item"><a class="nav-link" href="<?= url('admin/reservas.php') ?>">Reservas</a></li>
             <li class="nav-item"><a class="nav-link" href="<?= url('catalogo.php') ?>">Ver catálogo</a></li>
           <?php else: ?>
             <!-- Menú público y del CLIENTE -->

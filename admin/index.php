@@ -36,5 +36,7 @@ require '../includes/header.php';
 <div class="d-flex flex-wrap gap-2">
   <a href="<?= url('admin/categorias.php') ?>" class="btn btn-primary">Gestionar categorías</a>
   <a href="<?= url('admin/servicios.php') ?>" class="btn btn-primary">Gestionar servicios</a>
+  <a href="<?= url('admin/horarios.php') ?>" class="btn btn-primary">Gestionar horarios</a>
+  <a href="<?= url('admin/reservas.php') ?>" class="btn btn-acento">Ver reservas</a>
 </div>
 <?php require '../includes/footer.php'; ?>
