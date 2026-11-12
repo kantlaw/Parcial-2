@@ -1,0 +1,144 @@
+/* ==========================================================
+   ByteFix Soporte - estilos propios sobre Bootstrap 5.3
+   ----------------------------------------------------------
+   Paleta:
+     #12324F  azul marino (barra, títulos)  -> confianza, técnico
+     #1E6FA8  azul medio (botones y enlaces)
+     #F59E2B  naranja (acento, llamadas a la acción)
+     #F3F6F9  gris azulado (fondo de la página)
+   Bootstrap da la estructura (rejilla, formularios, tablas);
+   aquí solo se ajustan colores y algunos detalles.
+   ========================================================== */
+
+body {
+  background-color: #F3F6F9;
+  color: #1C2733;
+}
+
+h1, h2, h3 {
+  color: #12324F;
+}
+
+a {
+  color: #1E6FA8;
+}
+
+/* ---------- Barra de navegación ---------- */
+.barra {
+  background-color: #12324F;
+}
+
+.barra .nav-link:hover {
+  color: #F59E2B;
+}
+
+/* ---------- Botones ---------- */
+.btn-primary {
+  background-color: #1E6FA8;
+  border-color: #1E6FA8;
+}
+
+.btn-primary:hover {
+  background-color: #12324F;
+  border-color: #12324F;
+}
+
+/* Botón de acento para acciones principales (reservar, crear cuenta) */
+.btn-acento {
+  background-color: #F59E2B;
+  border-color: #F59E2B;
+  color: #12324F;
+  font-weight: 600;
+}
+
+.btn-acento:hover {
+  background-color: #E08A14;
+  border-color: #E08A14;
+  color: #12324F;
+}
+
+/* ---------- Portada del inicio ---------- */
+.portada {
+  background-color: #12324F;
+  background-image: url("../img/circuito.svg");
+  color: #FFFFFF;
+  border-radius: 1rem;
+}
+
+.portada h1 {
+  color: #FFFFFF;
+}
+
+.portada p {
+  color: #D5E2EE;
+}
+
+/* ---------- Tarjetas ---------- */
+.tarjeta {
+  border: 1px solid #DCE4EC;
+  border-radius: 0.75rem;
+}
+
+/* La tarjeta de servicio cambia de borde al pasar el mouse */
+.tarjeta-servicio:hover {
+  border-color: #1E6FA8;
+}
+
+.precio {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #12324F;
+}
+
+.icono-categoria {
+  width: 48px;
+  height: 48px;
+}
+
+/* Pasos de "Cómo funciona" */
+.paso-numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background-color: #F59E2B;
+  color: #12324F;
+  font-weight: 700;
+}
+
+/* ---------- Formularios de acceso ---------- */
+.caja-formulario {
+  max-width: 460px;
+}
+
+/* ---------- Pie de página ---------- */
+.pie {
+  background-color: #12324F;
+  color: #C9D7E4;
+}
+
+/* ---------- Celular ---------- */
+@media (max-width: 576px) {
+  .portada h1 {
+    font-size: 1.9rem;
+  }
+}
+
+/* Ancho de los formularios del panel ADMIN */
+.caja-media {
+  max-width: 720px;
+}
+
+/* Botones de contorno con la paleta del negocio */
+.btn-outline-primary {
+  color: #1E6FA8;
+  border-color: #1E6FA8;
+}
+
+.btn-outline-primary:hover {
+  background-color: #1E6FA8;
+  border-color: #1E6FA8;
+  color: #FFFFFF;
+}
