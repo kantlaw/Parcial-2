@@ -36,9 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!filter_var($datos['correo'], FILTER_VALIDATE_EMAIL)) {
         $errores[] = 'Escribe un correo válido.';
     }
-    if (mb_strlen($clave) < 8) {
-        $errores[] = 'La contraseña debe tener al menos 8 caracteres.';
-    }
+    $errores = array_merge($errores, validar_clave($clave, $datos['correo']));
 
     if (!$errores) {
         $sql = "INSERT INTO usuarios (rol_id, nombre, apellido, correo, password_hash)
@@ -87,7 +85,8 @@ require 'includes/header.php';
         </div>
         <div class="mb-3">
           <label for="clave" class="form-label">Contraseña</label>
-          <input type="password" id="clave" name="clave" class="form-control" minlength="8" required>
+          <input type="password" id="clave" name="clave" class="form-control" minlength="12" maxlength="72" required autocomplete="new-password">
+          <?= requisitos_clave_html() ?>
         </div>
         <button type="submit" class="btn btn-primary w-100">Crear administrador</button>
       </form>

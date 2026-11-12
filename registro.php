@@ -30,9 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!filter_var($datos['correo'], FILTER_VALIDATE_EMAIL) || mb_strlen($datos['correo']) > 120) {
         $errores[] = 'Escribe un correo electrónico válido.';
     }
-    if (mb_strlen($clave) < 8) {
-        $errores[] = 'La contraseña debe tener al menos 8 caracteres.';
-    }
+    // Política de contraseñas (ver validar_clave() en includes/seguridad.php)
+    $errores = array_merge($errores, validar_clave($clave, $datos['correo']));
     if ($clave !== $confirmacion) {
         $errores[] = 'Las contraseñas no coinciden.';
     }
@@ -99,12 +98,12 @@ require 'includes/header.php';
           </div>
           <div class="col-12">
             <label for="clave" class="form-label">Contraseña</label>
-            <input type="password" id="clave" name="clave" class="form-control" minlength="8" required>
-            <div class="form-text">Mínimo 8 caracteres.</div>
+            <input type="password" id="clave" name="clave" class="form-control" minlength="12" maxlength="72" required autocomplete="new-password">
+            <?= requisitos_clave_html() ?>
           </div>
           <div class="col-12">
             <label for="confirmacion" class="form-label">Repite la contraseña</label>
-            <input type="password" id="confirmacion" name="confirmacion" class="form-control" minlength="8" required>
+            <input type="password" id="confirmacion" name="confirmacion" class="form-control" minlength="12" maxlength="72" required autocomplete="new-password">
           </div>
         </div>
         <button type="submit" class="btn btn-acento w-100 mt-4">Crear cuenta</button>

@@ -5,6 +5,10 @@
 // ============================================================
 require_once __DIR__ . '/conexion.php';
 
+// Zona horaria de Panamá, para comparar fechas y horas de los horarios
+// con la misma hora que usa MySQL en el equipo local
+date_default_timezone_set('America/Panama');
+
 // ---------- 1. Errores: nunca mostrar SQL ni rutas internas ----------
 ini_set('display_errors', '0');
 set_exception_handler(function (Throwable $ex) {
@@ -22,6 +26,7 @@ header("Content-Security-Policy: default-src 'self'; script-src 'self'; style-sr
 header('X-Content-Type-Options: nosniff');   // el navegador no "adivina" tipos de archivo
 header('X-Frame-Options: DENY');             // nadie puede meter el sitio en un iframe
 header('Referrer-Policy: same-origin');
+header_remove('X-Powered-By');           // no revelar la versión de PHP
 
 // ---------- 3. Sesión con cookies seguras ----------
 session_name('BOOKGO_SESION');
@@ -155,4 +160,73 @@ function es_admin(): bool
 {
     $usuario = usuario_actual();
     return $usuario !== null && $usuario['rol'] === 'ADMIN';
+}
+
+// ---------- 7. Política de contraseñas ----------
+
+// Contraseñas muy usadas que se rechazan aunque cumplan las demás reglas
+const CLAVES_COMUNES = [
+    'password123!', 'contraseña123', 'contrasena123', 'qwerty123456', '123456789abc',
+    'administrador', 'admin1234567', 'bienvenido123', 'panama123456', 'abc123456789',
+];
+
+// Devuelve la lista de reglas que la contraseña NO cumple (vacía = válida)
+function validar_clave(string $clave, string $correo = ''): array
+{
+    $errores = [];
+
+    if (mb_strlen($clave) < 12) {
+        $errores[] = 'La contraseña debe tener al menos 12 caracteres.';
+    }
+    // password_hash (bcrypt) solo usa los primeros 72 bytes
+    if (strlen($clave) > 72) {
+        $errores[] = 'La contraseña no puede superar los 72 caracteres.';
+    }
+    if (!preg_match('/[A-ZÁÉÍÓÚÑ]/u', $clave)) {
+        $errores[] = 'Incluye al menos una letra mayúscula.';
+    }
+    if (!preg_match('/[a-záéíóúñ]/u', $clave)) {
+        $errores[] = 'Incluye al menos una letra minúscula.';
+    }
+    if (!preg_match('/[0-9]/', $clave)) {
+        $errores[] = 'Incluye al menos un número.';
+    }
+    if (!preg_match('/[^A-Za-zÁÉÍÓÚÑáéíóúñ0-9\s]/u', $clave)) {
+        $errores[] = 'Incluye al menos un símbolo, por ejemplo: ! # $ % & * ?';
+    }
+    if (preg_match('/\s/u', $clave)) {
+        $errores[] = 'La contraseña no puede tener espacios.';
+    }
+    // Cuatro caracteres iguales seguidos: aaaa, 1111
+    if (preg_match('/(.)\1{3,}/u', $clave)) {
+        $errores[] = 'No repitas el mismo carácter 4 veces seguidas.';
+    }
+    // No puede contener la parte del correo antes de la @
+    $usuario_correo = mb_strtolower(strstr($correo, '@', true) ?: '');
+    if (mb_strlen($usuario_correo) >= 4 && str_contains(mb_strtolower($clave), $usuario_correo)) {
+        $errores[] = 'La contraseña no puede contener tu correo.';
+    }
+    if (in_array(mb_strtolower($clave), CLAVES_COMUNES, true)) {
+        $errores[] = 'Esa contraseña es demasiado común. Elige otra.';
+    }
+    return $errores;
+}
+
+// Lista de requisitos que se muestra debajo del campo de contraseña.
+// app.js marca en verde cada regla a medida que se cumple.
+function requisitos_clave_html(): string
+{
+    $reglas = [
+        'largo'     => 'Mínimo 12 caracteres',
+        'mayuscula' => 'Una letra mayúscula',
+        'minuscula' => 'Una letra minúscula',
+        'numero'    => 'Un número',
+        'simbolo'   => 'Un símbolo (! # $ % & * ?)',
+        'espacios'  => 'Sin espacios',
+    ];
+    $html = '<ul class="requisitos-clave small mt-2 mb-0" id="requisitos-clave">';
+    foreach ($reglas as $regla => $texto) {
+        $html .= '<li data-regla="' . $regla . '">' . e($texto) . '</li>';
+    }
+    return $html . '</ul>';
 }

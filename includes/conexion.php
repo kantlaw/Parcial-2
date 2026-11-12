@@ -16,6 +16,8 @@ try {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
             // Consultas preparadas reales en el servidor MySQL
             PDO::ATTR_EMULATE_PREPARES   => false,
+            // MySQL usa la hora de Panamá (UTC-5, sin horario de verano), igual que PHP
+            PDO::MYSQL_ATTR_INIT_COMMAND => "SET time_zone = '-05:00'",
         ]
     );
 } catch (PDOException $ex) {
